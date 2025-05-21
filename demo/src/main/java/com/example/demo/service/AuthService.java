@@ -5,6 +5,8 @@ import com.example.demo.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class AuthService {
     private final UserRepository repo;
@@ -28,5 +30,14 @@ public class AuthService {
         return repo.findByUsername(username)
                 .map(user -> user.getPassword().equals(password))
                 .orElse(false);
+    }
+
+    public boolean verify(String username, String password) {
+        Optional<User> userOpt = repo.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            return false;
+        }
+        User user = userOpt.get();
+        return user.getPassword().equals(password);
     }
 }
