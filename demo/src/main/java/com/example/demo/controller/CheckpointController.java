@@ -17,9 +17,10 @@ public class CheckpointController {
         this.checkpointService = checkpointService;
     }
 
+    // Controller(GET)
     @GetMapping
-    public ResponseEntity<List<Checkpoint>> getAll() {
-        return ResponseEntity.ok(checkpointService.getAllCheckpoints());
+    public List<Checkpoint> getAll() {
+        return checkpointService.getAllCheckpoints(); // 내부에서 findAllByDeletedFalse()
     }
 
     @PostMapping
@@ -29,6 +30,19 @@ public class CheckpointController {
                 req.getName(), req.getNumber()
         );
         return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        checkpointService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // 복원용 엔드포인트
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<Void> restore(@PathVariable Long id) {
+        checkpointService.restore(id);
+        return ResponseEntity.noContent().build();
     }
 
     public static class CreateCheckpointRequest {

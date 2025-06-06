@@ -1,0 +1,79 @@
+/* checkpoint.css */
+
+/* 체크포인트 리스트 */
+.checkpoint-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.checkpoint-list .checkpoint-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* 체크박스 */
+.checkpoint-item .form-check-input {
+  margin-right: .75rem;
+}
+
+/* 등록·삭제 버튼 스타일 */
+.checkpoint-item .btn {
+  font-size: .85rem;
+  padding: .25rem .5rem;
+}
+
+/* 맵 컨테이너 추가 커스터마이징 */
+#map {
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* 폼 요소 정렬 */
+.checkpoint-form .form-label {
+  font-weight: 500;
+}
+.checkpoint-form .form-control {
+  max-width: 300px;
+}
+
+.map-container {
+  position: relative;
+}
+
+.crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.crosshair::before,
+.crosshair::after {
+  content: '';
+  position: absolute;
+  background: red;
+}
+
+.crosshair::before {
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 20px;
+  transform: translateX(-50%);
+}
+
+.crosshair::after {
+  left: 0;
+  top: 50%;
+  width: 20px;
+  height: 1px;
+  transform: translateY(-50%);
+}

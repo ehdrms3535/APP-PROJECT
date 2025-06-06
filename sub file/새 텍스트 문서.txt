@@ -1,0 +1,45 @@
+@startuml LoginFlow
+actor User as "사용자"
+participant Frontend as "AngularJS Frontend"
+participant AuthController as "Spring Boot Controller\n(AuthController)"
+participant AuthService as "AuthService"
+participant UserRepository as "UserRepository"
+database DB as "MySQL Database"
+
+User -> Frontend : "로그인 폼 작성 후\n버튼 클릭"
+note right of Frontend
+  - 입력된 username, password를 포함한 JSON 생성
+  - 요청: { username, password }
+end note
+
+Frontend -> AuthController : POST /api/login\n{ username, password }
+note right of AuthController
+  - @PostMapping("/api/login")
+  - RequestBody로 인증 정보 수신
+  - authenticate(credentials) 호출
+end note
+
+AuthController -> AuthService : authenticate(credentials)
+note right of AuthService
+  - credentials 유효성 검사
+  - UserRepository.findByUsername(username) 호출
+end note
+
+AuthService -> UserRepository : findByUsername(username)
+UserRepository -> DB : SELECT * FROM users WHERE username = ?
+DB --> UserRepository : { userRecord }
+UserRepository --> AuthService : { userRecord }
+
+note right of AuthService
+  - 비밀번호 검증
+  - authToken 생성
+end note
+
+AuthService --> AuthController : 200 OK { authToken }
+AuthController --> Frontend : 200 OK { authToken }
+
+note right of Frontend
+  - 받은 토큰 저장 (로컬 스토리지 등)
+  - 메인 페이지로 리디렉션
+end note
+@enduml

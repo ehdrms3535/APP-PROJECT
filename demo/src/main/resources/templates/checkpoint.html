@@ -1,142 +1,206 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="rideMapApp">
+<html lang="ko" ng-app="rideMapApp">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>체크포인트 관리</title>
 
-  <!-- AngularJS -->
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="/style.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
-  <!-- Crosshair CSS -->
+
   <style>
-    .map-container { position: relative; }
-    .crosshair {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 20px;
-      height: 20px;
-      margin-left: -10px;
-      margin-top: -10px;
-      pointer-events: none;
-      z-index: 1000;
-    }
-    .crosshair::before, .crosshair::after {
-      content: '';
-      position: absolute;
-      background: #ff0000;
-    }
-    .crosshair::before {
-      left: 50%;
-      top: 0;
-      width: 1px;
-      height: 20px;
-      transform: translateX(-50%);
-    }
-    .crosshair::after {
-      left: 0;
-      top: 50%;
-      width: 20px;
-      height: 1px;
-      transform: translateY(-50%);
-    }
+    /* 카드 내부 여백 */
+    .card-body { padding: 1.5rem; }
+    /* 지도 높이 고정 */
+    #map { height: 300px; width: 100%; border-radius: .375rem; }
+    /* 리스트 최대 높이, 스크롤 */
+    .checkpoint-list { max-height: 300px; overflow-y: auto; }
   </style>
 </head>
 <body ng-controller="CheckpointController">
-<div class="container p-4">
-  <h3>Checkpoints & Map</h3>
 
-  <!-- Map with Crosshair Overlay -->
-  <div class="map-container mb-4" style="width:100%; height:50vh;">
-    <div id="map" style="width:100%; height:100%; border:4px solid #333; border-radius:8px;"></div>
-    <div class="crosshair"></div>
+<div class="container py-4">
+  <h1 class="mb-4 text-center">체크포인트 관리</h1>
+
+  <div class="row g-4">
+    <!-- 좌측: 지도+폼 -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <!-- 지도 -->
+          <div id="map" class="mb-3"></div>
+
+          <!-- 등록 폼 -->
+          <form class="row g-2" ng-submit="saveCheckpoint()">
+            <div class="col-6">
+              <input type="text" class="form-control" ng-model="checkpoint.name" placeholder="이름" required>
+            </div>
+            <div class="col-6">
+              <input type="number" class="form-control" ng-model="checkpoint.number" placeholder="번호" required>
+            </div>
+            <div class="col-6">
+              <input type="text" class="form-control" ng-model="checkpoint.latitude" placeholder="위도" readonly>
+            </div>
+            <div class="col-6">
+              <input type="text" class="form-control" ng-model="checkpoint.longitude" placeholder="경도" readonly>
+            </div>
+            <div class="col-12 text-end">
+              <button type="submit" class="btn btn-primary">저장하기</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- 우측: 체크포인트 목록 -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">저장된 체크포인트</h5>
+          <ul class="list-group checkpoint-list">
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+                ng-repeat="c in checkpoints">
+              <div>
+                <strong>{{c.name}}</strong> (#{{c.number}})<br>
+                <small class="text-muted">
+                  {{c.latitude | number:5}}, {{c.longitude | number:5}}
+                </small>
+              </div>
+              <button class="btn btn-danger btn-sm"
+                      ng-click="deleteCheckpoint(c.id)">
+                삭제
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <form ng-submit="saveCheckpoint()" class="mb-4">
-    <div class="mb-3">
-      <label class="form-label">Name</label>
-      <input type="text" ng-model="checkpoint.name" class="form-control" placeholder="Enter checkpoint name" required>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Number</label>
-      <input type="number" ng-model="checkpoint.number" class="form-control" placeholder="Enter checkpoint number" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Save Checkpoint</button>
-  </form>
-
-  <ul class="list-group">
-    <li class="list-group-item" ng-repeat="cp in checkpoints">
-      <strong>#{{cp.number}}</strong> {{cp.name}}
-    </li>
-  </ul>
 </div>
 
-<!-- Scripts: Leaflet & App Logic -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- 앱 스크립트들 -->
+<script src="/js/app.js"></script>
+<script src="/checkpoint.js"></script>
+<!-- Bootstrap Bundle JS (팝업 등 필요 시) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  angular.module('rideMapApp', [])
+  angular.module('rideMapApp',[])  // 이미 선언된 모듈 사용
     .controller('CheckpointController', ['$scope', '$http', function($scope, $http) {
-      $scope.checkpoint = { name: '', number: null };
+      // 초기 모델
+      $scope.checkpoint = { name: '', number: null, latitude: null, longitude: null };
       $scope.checkpoints = [];
 
-      // Initialize map
-      window.map = L.map('map').setView([0, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-      .addTo(window.map);
+      // 지도 초기화
+      var map = L.map('map').setView([37.5665, 126.9780], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+        .addTo(map);
 
-    // 2) 위치를 얻으면 뷰만 옮기기
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          console.log(`내 위치: ${lat}, ${lng}`);
-          $scope.$apply(() => {
-            $scope.lat = lat;
-            $scope.lng = lng;
-          });
-          // 맵 재초기화가 아니라 뷰만 이동
-          window.map.setView([lat, lng], 13);
-          L.marker([lat, lng]).addTo(window.map)
-            .bindPopup("여기에 있습니다").openPopup();
-        },
-        err => console.error("위치 정보를 가져오지 못했습니다.", err),
-        { enableHighAccuracy: true }
-      );
-    }
-      // Load existing checkpoints and add markers
-      $http.get('/api/checkpoints').then(function(response) {
-        $scope.checkpoints = response.data;
-        $scope.checkpoints.forEach(function(cp) {
-          L.marker([cp.latitude, cp.longitude]).bindPopup('<b>' + cp.name + '</b><br/>#' + cp.number).addTo(map);
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude;
+    var lng = pos.coords.longitude;
+    map.setView([lat, lng], 15);          // 줌 레벨은 필요에 따라 조정
+    // (선택) 현재 위치 마커 표시
+    L.circleMarker([lat, lng], {
+      radius: 8,
+      color: '#007bff',
+      fillColor: '#007bff',
+      fillOpacity: 0.7
+    })
+    .addTo(map)
+    .bindPopup('현재 위치')
+    .openPopup();
+  }, function(err) {
+    console.warn('GPS 위치를 가져올 수 없습니다.', err);
+  }, {
+    enableHighAccuracy: true,
+    timeout: 5000
+  });
+}
+
+ function loadCheckpoints() {
+          $http.get('/api/checkpoints')
+            .then(res => {
+              res.data.forEach(cp => {
+                // 엔티티 필드명이 latitude/longitude/name 이라면, 아래처럼 조정하세요:
+                const lat = cp.latitude || cp.lat;
+                const lng = cp.longitude|| cp.lng;
+                const label = cp.name || cp.checkname;
+                if (lat != null && lng != null) {
+                  L.marker([lat, lng])
+                   .addTo(map)
+                   .bindPopup(label + ' (#' + (cp.number||cp.checkpoint) + ')');
+                }
+              });
+            })
+            .catch(err => console.error('체크포인트 로드 실패', err));
+        }
+        loadCheckpoints();
+
+      // 클릭 마커 변수
+      var clickMarker;
+
+      // 지도 클릭 → 위도/경도 캡처, 마커 표시
+      map.on('click', function(e) {
+        $scope.$apply(function() {
+          $scope.checkpoint.latitude  = e.latlng.lat;
+          $scope.checkpoint.longitude = e.latlng.lng;
         });
+        if (clickMarker) map.removeLayer(clickMarker);
+        clickMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
       });
 
-      // Save checkpoint at map center
+      // 기존 체크포인트 불러오기
+      function loadList() {
+        $http.get('/api/checkpoints')
+          .then(function(res) {
+            $scope.checkpoints = res.data;
+          }, function(err) {
+            console.error('목록 로드 실패', err);
+          });
+      }
+      loadList();
+
+      // 저장
       $scope.saveCheckpoint = function() {
-        if (!$scope.checkpoint.name || $scope.checkpoint.number == null) return;
-        var center = map.getCenter();
-        var payload = {
-          latitude: center.lat,
-          longitude: center.lng,
-          name: $scope.checkpoint.name,
-          number: $scope.checkpoint.number
-        };
-        $http.post('/api/checkpoints', payload).then(function(res) {
-          var cp = res.data;
-          $scope.checkpoints.push(cp);
-          L.marker([cp.latitude, cp.longitude]).bindPopup('<b>' + cp.name + '</b><br/>#' + cp.number).addTo(map);
-          $scope.checkpoint = { name: '', number: null };
-        });
+        if (!$scope.checkpoint.latitude || !$scope.checkpoint.longitude) {
+          return alert('지도를 클릭해서 위치를 선택해 주세요.');
+        }
+        $http.post('/api/checkpoints', $scope.checkpoint)
+          .then(function(res) {
+            $scope.checkpoints.push(res.data);
+            // 리셋
+            $scope.checkpoint = { name: '', number: null, latitude: null, longitude: null };
+            if (clickMarker) map.removeLayer(clickMarker);
+          }, function(err) {
+            console.error('저장 실패', err);
+            alert('저장 중 오류가 발생했습니다.');
+          });
       };
+
+                  // 3) 삭제 함수 추가 위치 ↓
+            $scope.deleteCheckpoint = function(id) {
+              if (!confirm('정말 삭제하시겠습니까?')) return;
+              $http.delete('/api/checkpoints/' + id)
+                .then(function() {
+                  // 화면에서 리스트 업데이트
+                  $scope.checkpoints = $scope.checkpoints.filter(function(c) {
+                    return c.id !== id;
+                  });
+                })
+                .catch(function(err) {
+                  console.error('삭제 실패', err);
+                  alert('삭제 중 오류가 발생했습니다.');
+                });
+            };
     }]);
 </script>
 
-<footer class="fixed-bottom bg-white text-muted p-2 text-center">© 2025 RIDE MAP</footer>
 </body>
 </html>

@@ -31,5 +31,21 @@
             alert('체크포인트 저장 중 오류가 발생했습니다.');
           });
       };
+
+            // 3) 삭제 함수 추가 위치 ↓
+            $scope.deleteCheckpoint = function(id) {
+              if (!confirm('정말 삭제하시겠습니까?')) return;
+              $http.delete('/api/checkpoints/' + id)
+                .then(function() {
+                  // 화면에서 리스트 업데이트
+                  $scope.checkpoints = $scope.checkpoints.filter(function(c) {
+                    return c.id !== id;
+                  });
+                })
+                .catch(function(err) {
+                  console.error('삭제 실패', err);
+                  alert('삭제 중 오류가 발생했습니다.');
+                });
+            };
     }]);
 })();

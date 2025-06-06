@@ -1,3 +1,0 @@
-##OPENSOURCE##
-# WEBAPP-PROJECT
- WEBAPP-repository

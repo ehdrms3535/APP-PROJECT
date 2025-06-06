@@ -20,7 +20,7 @@ public class MapController {
 
     @GetMapping("/reference")
     public String reference() {
-        return "reference"; // templates/qr.html
+        return "reference";
     }
 
 }

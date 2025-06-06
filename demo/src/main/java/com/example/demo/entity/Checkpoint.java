@@ -25,6 +25,9 @@ public class Checkpoint {
     @Column(nullable = false, unique = true)
     private Integer number;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     // 기본 생성자
     public Checkpoint() {}
 
@@ -51,6 +54,9 @@ public class Checkpoint {
 
     public Integer getNumber() { return number; }
     public void setNumber(Integer number) { this.number = number; }
+
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 }
 
 // CheckpointRepository.java

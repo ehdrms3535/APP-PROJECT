@@ -18,11 +18,6 @@ public class MainController {
         return "group"; // templates/group.html
     }
 
-    @GetMapping("/qr")
-    public String showQr() {
-        return "qr"; // templates/qr.html
-    }
-
     @GetMapping("/save")
     public String showSave() {
         return "save"; // templates/save.html
